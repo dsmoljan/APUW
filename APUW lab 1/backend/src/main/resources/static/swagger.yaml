@@ -1,0 +1,460 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+paths:
+  /users/{userId}:
+    get:
+      tags:
+      - user-controller
+      summary: Retrieve the user with the specified id
+      operationId: getUser
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "400":
+          description: Invalid id supplied
+          content: {}
+        "404":
+          description: No users with the specified id were found
+          content: {}
+        "200":
+          description: Successfully retrieved the user with the specified id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailsDTO'
+    put:
+      tags:
+      - user-controller
+      summary: Update the user with the specified id
+      operationId: updateUser
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        "400":
+          description: Bad Request - either invalid id or request body (user dto) was supplied
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/HandledErrorDTO'
+        "404":
+          description: No users with the specified id were found
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserDetailsDTO'
+    delete:
+      tags:
+      - user-controller
+      summary: Delete the user with the specified id. Also deletes all posts belonging to that user.
+      operationId: deleteUser
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "400":
+          description: Bad Request - invalid user id was specified
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/HandledErrorDTO'
+        "404":
+          description: No users with the specified id were found
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+        "200":
+          description: OK
+  /posts/{postId}:
+    get:
+      tags:
+      - post-controller
+      summary: Retrieve the post with the specified id
+      operationId: getPost
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "400":
+          description: Bad Request - invalid post id was provided
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/HandledErrorDTO'
+        "404":
+          description: No posts with the specified id were found
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PostDTO'
+    put:
+      tags:
+      - post-controller
+      summary: Update the post with the specified id
+      operationId: updatePost
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePostDTO'
+        required: true
+      responses:
+        "400":
+          description: Bad Request - either the post id or the request body is invalid (i.e validation error). The error body contains more information about the cause.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/HandledErrorDTO'
+        "404":
+          description: No posts with the specified id were found
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PostDTO'
+    delete:
+      tags:
+      - post-controller
+      summary: Delete the post with the specified id.
+      operationId: deletePost
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "400":
+          description: Bad Request - invalid post id value was provided
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/HandledErrorDTO'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+        "200":
+          description: OK
+  /users:
+    get:
+      tags:
+      - user-controller
+      summary: Retrieve all registered users
+      operationId: getAllUsers
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/HandledErrorDTO'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+        "200":
+          description: Successfully retrieved all users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailsDTO'
+    post:
+      tags:
+      - user-controller
+      summary: Register a new user
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        "400":
+          description: "Invalid request format (i.e not all params are present in\
+            \ the body, username/email already exists)"
+          content: {}
+        "200":
+          description: "Successfully registered a new user. Returns the new user, including\
+            \ the assigned ID in the response body"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailsDTO'
+  /posts:
+    get:
+      tags:
+      - post-controller
+      summary: Get all created posts, made by all users.
+      operationId: getAllPosts
+      responses:
+        "200":
+          description: Returns a list of all the created posts.
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostDTO'
+    post:
+      tags:
+      - post-controller
+      summary: Create a new post.
+      operationId: createPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePostDTO'
+        required: true
+      responses:
+        "400":
+          description: "Bad Request - the request body is in the wrong format, or its data have failed validation. \
+            \ The response message contains more info about the cause."
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/HandledErrorDTO'
+        "200":
+          description: The post was successfully created, and is returned in the response body.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PostDTO'
+  /users/{userId}/posts:
+    get:
+      tags:
+      - user-controller
+      summary: Retrieve all posts made by the user with the specified id.
+      operationId: getAllPostsByUser
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "400":
+          description: Bad Request - the provided user id is invalid
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/HandledErrorDTO'
+        "404":
+          description: Not Found - no users with the specified id were found
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostDTO'
+  /documentation:
+    get:
+      tags:
+      - documentation-controller
+      operationId: getDocumentation
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/HandledErrorDTO'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MethodEntityDTO'
+components:
+  schemas:
+    HandledErrorDTO:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+        validations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationPair'
+    ValidationPair:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    User:
+      required:
+      - email
+      - firstName
+      - lastName
+      - password
+      - username
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          maxLength: 64
+          minLength: 0
+          type: string
+        email:
+          maxLength: 64
+          minLength: 0
+          type: string
+        password:
+          maxLength: 64
+          minLength: 0
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+    UserDetailsDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+    UpdatePostDTO:
+      type: object
+      properties:
+        content:
+          type: string
+        image:
+          type: string
+    PostDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        content:
+          type: string
+        image:
+          type: string
+        authorId:
+          type: integer
+          format: int64
+    CreatePostDTO:
+      type: object
+      properties:
+        content:
+          type: string
+        image:
+          type: string
+        authorId:
+          type: integer
+          format: int64
+    MethodEntityDTO:
+      type: object
+      properties:
+        httpMethod:
+          type: string
+        url:
+          type: string
+        description:
+          type: string
