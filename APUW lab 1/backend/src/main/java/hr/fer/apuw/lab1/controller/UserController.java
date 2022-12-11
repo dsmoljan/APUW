@@ -48,37 +48,16 @@ public class UserController {
     this.modelMapper = modelMapper;
   }
 
-  @Operation(summary = "Retrieve all registered users")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Successfully retrieved all users",
-          content = { @Content(mediaType = "application/json",
-              schema = @Schema(implementation = UserDetailsDTO.class)) })})
   @GetMapping
   public ResponseEntity<List<UserDetailsDTO>> getAllUsers(){
     return ResponseEntity.ok((userService.getAllUsers().stream().map(m -> modelMapper.map(m, UserDetailsDTO.class)).collect(Collectors.toList())));
   }
 
-  @Operation(summary = "Retrieve the user with specified id")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Successfully retrieved the user with the specified id",
-          content = { @Content(mediaType = "application/json",
-              schema = @Schema(implementation = UserDetailsDTO.class)) }),
-      @ApiResponse(responseCode = "400", description = "Invalid id supplied",
-          content = @Content),
-      @ApiResponse(responseCode = "404", description = "User was not found",
-          content = @Content) })
   @GetMapping("/{userId}")
   public ResponseEntity<UserDetailsDTO> getUser(@PathVariable Long userId){
     return ResponseEntity.ok(modelMapper.map(userService.getUserById(userId), UserDetailsDTO.class));
   }
 
-  @Operation(summary = "Register a new user")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Successfully registered a new user. Return the new user, including the assigned ID in the response body",
-          content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = UserDetailsDTO.class))}),
-      @ApiResponse(responseCode = "400", description = "Invalid request format (i.e not all params are present in the body, username/email already exists)",
-          content = @Content)})
   @PostMapping
   public ResponseEntity<UserDetailsDTO> createUser(@Valid @RequestBody User newUser){
     return ResponseEntity.ok(modelMapper.map(userService.createUser(newUser), UserDetailsDTO.class));

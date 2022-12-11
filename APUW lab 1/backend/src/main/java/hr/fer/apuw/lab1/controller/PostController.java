@@ -34,6 +34,9 @@ public class PostController {
     this.modelMapper = modelMapper;
   }
 
+  // possible improvement
+  // add a "public" field to a post
+  // then, this method would return only posts with the public field set to true
   @GetMapping
   public ResponseEntity<List<PostDTO>> getAllPosts(){
     return ResponseEntity.ok(postService.getAllPosts().stream().map(p -> modelMapper.map(p, PostDTO.class)).collect(Collectors.toList()));
