@@ -60,6 +60,7 @@ public class UserController {
 
   @PostMapping
   public ResponseEntity<UserDetailsDTO> createUser(@Valid @RequestBody User newUser){
+    System.out.println("Hello");
     return ResponseEntity.ok(modelMapper.map(userService.createUser(newUser), UserDetailsDTO.class));
   }
 

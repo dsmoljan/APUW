@@ -11,6 +11,7 @@ public class UserGeneratingUtil {
     user.setLastName("Smoljan");
     user.setEmail("dorian.smoljan@gmail.com");
     user.setPassword("password");
+    user.setUsername("dsmoljan");
     return user;
   }
 
