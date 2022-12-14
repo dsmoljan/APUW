@@ -7,6 +7,7 @@ import hr.fer.apuw.lab1.service.PostService;
 import hr.fer.apuw.lab1.service.UserService;
 import javax.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,10 +20,13 @@ public class UserServiceImpl implements UserService {
 
   private final PostService postService;
 
+  private final PasswordEncoder passwordEncoder;
+
   @Autowired
-  public UserServiceImpl(UserRepository userRepository, PostService postService){
+  public UserServiceImpl(UserRepository userRepository, PostService postService, PasswordEncoder passwordEncoder){
     this.userRepository = userRepository;
     this.postService = postService;
+    this.passwordEncoder = passwordEncoder;
   }
 
   @Override
@@ -46,7 +50,7 @@ public class UserServiceImpl implements UserService {
       throw new RequestDeniedException("User with the given email already exists!");
     }
 
-
+    user.setPassword(passwordEncoder.encode(user.getPassword()));
     return userRepository.save(user);
   }
 
