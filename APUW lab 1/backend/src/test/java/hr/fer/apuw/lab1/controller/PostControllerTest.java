@@ -85,7 +85,7 @@ public class PostControllerTest {
 
     when(postService.getAllPosts()).thenReturn(List.of(mockPost));
 
-    mvc.perform(get("/posts").
+    mvc.perform(get("/api/posts/").
             accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().json(jsonPostDetailsListResponse.write(allPosts.stream().map(p -> modelMapper.map(p, PostDTO.class)).collect(Collectors.toList())).getJson()));
@@ -97,7 +97,7 @@ public class PostControllerTest {
 
     when(postService.getPostById(mockPost.getId())).thenReturn(mockPost);
 
-    mvc.perform(get("/posts/" + mockPost.getId().toString()).
+    mvc.perform(get("/api/posts/" + mockPost.getId().toString()).
             contentType(MediaType.APPLICATION_JSON)).
         andExpect(status().isOk())
         .andExpect(content().json(jsonPostDetailsResponse.write(modelMapper.map(mockPost, PostDTO.class)).getJson()));
@@ -109,7 +109,7 @@ public class PostControllerTest {
 
     when(postService.getPostById(mockPost.getId())).thenThrow(new EntityNotFoundException("Post with the given id was not found!"));
 
-    mvc.perform(get("/posts/" + mockPost.getId().toString())
+    mvc.perform(get("/api/posts/" + mockPost.getId().toString())
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
@@ -125,7 +125,7 @@ public class PostControllerTest {
 
     when(postService.createPost(any(CreatePostDTO.class))).thenReturn(mockPost);
 
-    mvc.perform(post("/posts")
+    mvc.perform(post("/api/posts/")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(requestMap)))
         .andExpect(status().isOk())
@@ -143,7 +143,7 @@ public class PostControllerTest {
 
     when(postService.createPost(any(CreatePostDTO.class))).thenThrow(new EntityNotFoundException("User with given ID was not found!"));
 
-    mvc.perform(post("/posts")
+    mvc.perform(post("/api/posts/")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(requestMap)))
         .andExpect(status().isNotFound());
@@ -160,7 +160,7 @@ public class PostControllerTest {
 
     when(postService.updatePost(longThat(l -> l.equals(mockPost.getId())), any(UpdatePostDTO.class))).thenReturn(mockPost);
 
-    mvc.perform(put("/posts/" + mockPost.getId().toString())
+    mvc.perform(put("/api/posts/" + mockPost.getId().toString())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(requestMap)))
         .andExpect(status().isOk())
@@ -178,7 +178,7 @@ public class PostControllerTest {
 
     when(postService.updatePost(longThat(l -> l.equals(mockPost.getId())), any(UpdatePostDTO.class))).thenThrow(new EntityNotFoundException("Post with the given id was not found!"));
 
-    mvc.perform(put("/posts/" + mockPost.getId().toString())
+    mvc.perform(put("/api/posts/" + mockPost.getId().toString())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(requestMap)))
         .andExpect(status().isNotFound());
@@ -188,7 +188,7 @@ public class PostControllerTest {
   public void testDeletePostOK() throws Exception {
     Post mockPost = PostGeneratingUtil.createMockPost();
 
-    mvc.perform(delete("/posts/" + mockPost.getId().toString())
+    mvc.perform(delete("/api/posts/" + mockPost.getId().toString())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
   }
@@ -199,7 +199,7 @@ public class PostControllerTest {
 
     doThrow(new EntityNotFoundException("Post with the given id was not found!")).when(postService).deletePost(mockPost.getId());
 
-    mvc.perform(delete("/posts/" + mockPost.getId().toString())
+    mvc.perform(delete("/api/posts/" + mockPost.getId().toString())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
 

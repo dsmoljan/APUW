@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 //također ovdje implementiraj login handler?
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UserController {
 
   private final UserService userService;

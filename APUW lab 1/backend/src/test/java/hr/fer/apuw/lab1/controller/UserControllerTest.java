@@ -91,7 +91,7 @@ public class UserControllerTest {
 
     when(userService.getAllUsers()).thenReturn(List.of(mockUser));
 
-    mvc.perform(get("/users").
+    mvc.perform(get("/api/users").
             accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().json(jsonUserDetailsListResponse.write(allUsers.stream().map(u -> modelMapper.map(u, UserDetailsDTO.class)).collect(Collectors.toList())).getJson()));
@@ -103,7 +103,7 @@ public class UserControllerTest {
 
     when(userService.getUserById(mockUser.getId())).thenReturn(mockUser);
 
-    mvc.perform(get("/users/" + mockUser.getId().toString()).
+    mvc.perform(get("/api/users/" + mockUser.getId().toString()).
         contentType(MediaType.APPLICATION_JSON)).
         andExpect(status().isOk())
         .andExpect(content().json(jsonUserDetailsResponse.write(modelMapper.map(mockUser, UserDetailsDTO.class)).getJson()));
@@ -115,14 +115,14 @@ public class UserControllerTest {
 
     when(userService.getUserById(mockUser.getId())).thenThrow(new EntityNotFoundException("User with the given id was not found!"));
 
-    mvc.perform(get("/users/" + mockUser.getId().toString())
+    mvc.perform(get("/api/users/" + mockUser.getId().toString())
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
 
   @Test
   public void testGetUserInvalidParameter() throws Exception{
-    mvc.perform(get("/users/" + "somerandomuser")
+    mvc.perform(get("/api/users/" + "somerandomuser")
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
   }
@@ -140,7 +140,7 @@ public class UserControllerTest {
 
     when(userService.createUser(any(User.class))).thenReturn(mockUser);
 
-    mvc.perform(post("/users")
+    mvc.perform(post("/api/users")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(requestMap)))
         .andExpect(status().isOk())
@@ -159,7 +159,7 @@ public class UserControllerTest {
     requestMap.put("lastName", mockUser.getLastName());
     requestMap.put("password", mockUser.getPassword());
 
-    mvc.perform(post("/users")
+    mvc.perform(post("/api/users")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(requestMap)))
         .andExpect(status().isBadRequest());
@@ -179,7 +179,7 @@ public class UserControllerTest {
 
     when(userService.updateUser(longThat(l -> l.equals(mockUser.getId())), any(User.class))).thenReturn(mockUser);
 
-    mvc.perform(put("/users/" + mockUser.getId().toString())
+    mvc.perform(put("/api/users/" + mockUser.getId().toString())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(requestMap)))
         .andExpect(status().isOk())
@@ -199,7 +199,7 @@ public class UserControllerTest {
 
     when(userService.updateUser(longThat(l -> l.equals(mockUser.getId())), any(User.class))).thenThrow(new EntityNotFoundException("User with the given id was not found!"));
 
-    mvc.perform(put("/users/" + mockUser.getId().toString())
+    mvc.perform(put("/api/users/" + mockUser.getId().toString())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(requestMap)))
         .andExpect(status().isNotFound());
@@ -210,7 +210,7 @@ public class UserControllerTest {
   public void testDeleteOK() throws Exception {
     User mockUser = UserGeneratingUtil.createMockUser();
 
-    mvc.perform(delete("/users/" + mockUser.getId().toString()).
+    mvc.perform(delete("/api/users/" + mockUser.getId().toString()).
             contentType(MediaType.APPLICATION_JSON)).
         andExpect(status().isOk());
   }
@@ -221,7 +221,7 @@ public class UserControllerTest {
 
     doThrow(new EntityNotFoundException("User with the given id was not found!")).when(userService).deleteUser(mockUser.getId());
 
-    mvc.perform(delete("/users/" + mockUser.getId().toString()).
+    mvc.perform(delete("/api/users/" + mockUser.getId().toString()).
             contentType(MediaType.APPLICATION_JSON)).
         andExpect(status().isNotFound());
 

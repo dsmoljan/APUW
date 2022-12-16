@@ -41,8 +41,10 @@ public class CustomWebSecurityConfigurerAdapter {
     http.
         sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // ako se ukloni ovaj sessionManagement config, doslovno dobivamo token pri uspješnom basic authu lol koji se onda koristi dalje
-        ).
-        csrf()
+        )
+        .headers().frameOptions().disable() // bitno kako bi mogli pristupiti h2 console
+        .and() // sa ovim ulančavamo više različitih stvari, tipa header management, authentication i entry point sve u jednom
+        .csrf()
         .disable()
         .authorizeRequests()
         .antMatchers("/", "/swagger-ui/**", "/swagger.yaml", "/api-docs/**", "/h2-console/**")
