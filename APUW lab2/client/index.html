@@ -1,0 +1,36 @@
+<html>
+<head>
+    <title>Chat App</title>
+</head>
+<body>
+<h1>Chat App</h1>
+<form>
+    <h2>Select protocol</h2>
+    <div>
+        <input type="radio" id="poll" name="protocol" value="poll">
+        <label for="poll">Poll</label>
+    </div>
+    <div>
+        <input type="radio" id="longpoll" name="protocol" value="longpoll">
+        <label for="longpoll">Long poll</label>
+    </div>
+    <div>
+        <input type="radio" id="websocket" name="protocol" value="websocket">
+        <label for="websocket">WebSocket</label>
+    </div>
+</form>
+<br>
+<div id="messages">
+    <p><b>Messages</b></p>
+    Poruka 1
+</div>
+<form>
+    <br>
+    <label for="message">Message:</label>
+    <input type="text" id="message" name="message" required>
+    <br>
+    <input type="button" value="Send" onclick="sendMessage(document.getElementById('message').value)">
+</form>
+<script src="client.js"></script>
+</body>
+</html>
