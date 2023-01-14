@@ -32,6 +32,12 @@ function registerClient(){
     const xhr = new XMLHttpRequest();
     xhr.open("POST", serverUrl + "/register", true);
     xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onload = function() {
+        if (this.status == 200){
+            console.log("Successfully registered!");
+            console.log(this.response);
+        }
+    }
     xhr.send(JSON.stringify({ from: clientId, message }));
 
 }
