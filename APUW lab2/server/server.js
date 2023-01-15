@@ -2,6 +2,8 @@ const express = require('express')
 var cors = require('cors')
 const app = express()
 
+const WebSocket = require('ws');
+
 const port = 5000;
 
 var messagesForA = [];
@@ -13,8 +15,17 @@ var clientBProtocol = null;
 var clientALongPollRes = null;
 var clientBLongPollRes = null;
 
+var clientAWebSocket = null;
+var clientBWebSocket = null;
+
 app.use(cors());
 app.use(express.json());
+
+const server = app.listen(port, () => {
+    console.log(`Example app listening on port ${port}`)
+})
+
+const wss = new WebSocket.Server({ server });
 
 
 // ovo samo kaze "kad dobijes get zahtjev na /, sto napraviti
@@ -50,11 +61,17 @@ app.post('/message/send', (req, res) => {
         messagesForB.push(req.body.message);
         if (clientBProtocol === "longpoll"){
             handleLongPollMsgResponse(clientBLongPollRes, messagesForB.pop());
+        }else if (clientBProtocol === "websocket"){
+            //TODO
+            console.log("ERROR! NOT IMPLEMENTED!!!!!")
         }
     }else{
         messagesForA.push(req.body.message);
         if (clientAProtocol === "longpoll"){
             handleLongPollMsgResponse(clientALongPollRes, messagesForA.pop());
+        }else if (clientAProtocol === "websocket") {
+            //TODO
+            console.log("ERROR! NOT IMPLEMENTED!!!!!")
         }
     }
 
@@ -144,10 +161,59 @@ function closeLongPoll(client) {
     }
 }
 
+// websocket
+wss.onopen = function(event) {
+    console.log("New WebSocket opened");
+}
 
+wss.on('message', (message) => {
+    console.log("Recieved WebSocket message");
 
+    const messageJson = JSON.parse(message);
 
-
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
+    if (messageJson.from === 'A'){
+        if (messageJson.message === "register"){
+            clientAWebSocket = wss;
+        }else{
+            messagesForB.push(messageJson.message);
+            if (clientBProtocol === "longpoll"){
+                handleLongPollMsgResponse(clientBLongPollRes, messagesForB.pop());
+            }else if (clientBProtocol === "websocket"){
+                //TODO
+                console.log("ERROR! NOT IMPLEMENTED!!!!!")
+            }
+        }
+    }else{
+        if (messageJson.message === "register"){
+            clientBWebSocket = wss;
+        }else{
+            messagesForA.push(messageJson.message);
+            if (clientAProtocol === "longpoll"){
+                handleLongPollMsgResponse(clientALongPollRes, messagesForA.pop());
+            }else if (clientAProtocol === "websocket"){
+                //TODO
+                console.log("ERROR! NOT IMPLEMENTED!!!!!")
+            }
+        }
+    }
 })
+
+wss.on('close', (message) => {
+    if (clientAWebSocket === wss){
+        console.log("WebSocket for A closed");
+        clientAWebSocket = null;
+    }else if (clientBWebSocket === wss){
+        console.log("WebSocket for B closed");
+        clientBWebSocket = null;
+    }else{
+        console.log("Unknow WebSocket closed! Possible error!");
+    }
+})
+
+
+
+function handleWebSocketMessageResponse(clientWebSocket, message) {
+    if (clientWebSocket !== null) {
+        clientWebSocket.send(message);
+    }
+}

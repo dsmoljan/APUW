@@ -2,6 +2,7 @@ const radios = document.querySelectorAll('input[name="protocol"]');
 
 let clientId = "A";
 const serverUrl = 'http://localhost:5000';
+const wsUrl = "ws://127.0.0.1:5000";
 
 var protocol = "poll";
 
@@ -11,20 +12,7 @@ var pollDaemonId = null;
 
 var allMessages = [];
 
-// for (let i = 0; i < radios.length; i++) {
-//     radios[i].addEventListener('change', function() {
-//         if (this.checked) {
-//             selectedOptionChanged(this.value);
-//         }
-//     });
-// }
-//
-// function selectedOptionChanged(option) {
-//     console.log(`Selected option changed to ${option}`);
-//     protocol = option;
-//     registerClient();
-//     initiateMessageService();
-// }
+var webSocket = new WebSocket(wsUrl);
 
 function initiateMessageService() {
     if (protocol === "poll"){
@@ -36,6 +24,8 @@ function initiateMessageService() {
         }
         if (protocol === "longpoll"){
             chkMsgLongPoll();
+        }else{
+            console.log("Starting WebSocket message service");
         }
     }
 }
@@ -109,30 +99,34 @@ function sendMessageLongPoll(message){
 function sendMessageWebSocket(message){
 }
 
-
-// window.addEventListener('load', function() {
-//     registerClient();
-//     listenForMessages();
-//     initiateMessageService();
-// });
-
 function registerClient(selectedProtocol, user){
     protocol = document.querySelector('input[name="protocol"]:checked').value;
     clientId = document.querySelector('input[name="user"]:checked').value;
     console.log("Registering client at server as client " + clientId);
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", serverUrl + "/register", true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onload = function() {
-        if (this.status === 200){
-            console.log("Successfully registered!");
-            console.log(this.response);
-            initiateMessageService();
-        }else{
-            console.log("Error while attempting to register client!");
+    if (protocol === "poll" || protocol === "longpoll"){
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", serverUrl + "/register", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onload = function() {
+            if (this.status === 200){
+                console.log("Successfully registered!");
+                console.log(this.response);
+                initiateMessageService();
+            }else{
+                console.log("Error while attempting to register client!");
+            }
         }
+        xhr.send(JSON.stringify({ from: clientId, protocol: protocol }));
+    }else{
+        initiateMessageService();
     }
-    xhr.send(JSON.stringify({ from: clientId, protocol: protocol }));
+
+
+}
+
+webSocket.onopen = function(){
+    console.log("WebSocket opened. Sending register message");
+    webSocket.send(JSON.stringify({from: clientId, message: "register"}))
 }
 
 
