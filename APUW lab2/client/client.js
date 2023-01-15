@@ -45,7 +45,7 @@ function initWebSocket(){
 
     webSocket.onmessage = function(msgEvent){
         console.log(msgEvent.data);
-        addAndDisplayNewRecievedMessage(JSON.parse(msgEvent).message);
+        addAndDisplayNewRecievedMessage(JSON.parse(msgEvent.data).message);
     }
 }
 
