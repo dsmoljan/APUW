@@ -30,14 +30,20 @@ function initiateMessageService() {
     if (protocol === "poll"){
         pollDaemonId = setInterval(chkMsgPoll, MSG_CHECK_INTERVAL);
     }else{
-        clearInterval(pollDaemonId);
+        if (pollDaemonId != null){
+            clearInterval(pollDaemonId);
+            pollDaemonId = null;
+        }
+        if (protocol === "longpoll"){
+            chkMsgLongPoll();
+        }
     }
 
 }
 
 function chkMsgPoll(){
     console.log("Checking for new messages by poll protocol");
-    var xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     xhr.open('POST', serverUrl + '/message/get');
     xhr.onload = function() {
         // a server bi mogao npr. vratiti 204 ako nema novih poruka
@@ -50,9 +56,27 @@ function chkMsgPoll(){
 
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify({ from: clientId, protocol: protocol }));
-
 }
 
+function chkMsgLongPoll(){
+    console.log("Checking for new messages by long poll protocol");
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', serverUrl + '/message/get');
+
+    xhr.onload = function() {
+        if (this.status === 200) {
+            console.log("Found a new message");
+            addAndDisplayNewRecievedMessage(JSON.parse(this.responseText).message);
+            chkMsgLongPoll();
+        }else{
+            // ako nije vratio 200OK, znači da se ovaj protokol više ne koristi tako da nemoj ponovo pozvati chkMsgLongPoll
+            return;
+        }
+    };
+
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify({ from: clientId, protocol: protocol }));
+}
 
 
 function sendMessage(message) {
@@ -77,6 +101,10 @@ function sendMessagePoll(message){
 }
 
 function sendMessageLongPoll(message){
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", serverUrl + "/message/send", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify({ from: clientId, protocol: protocol, message: message }));
 }
 
 function sendMessageWebSocket(message){
@@ -90,8 +118,6 @@ function sendMessageWebSocket(message){
 // });
 
 function registerClient(selectedProtocol, user){
-
-
     protocol = document.querySelector('input[name="protocol"]:checked').value;
     clientId = document.querySelector('input[name="user"]:checked').value;
     console.log("Registering client at server");
@@ -106,12 +132,10 @@ function registerClient(selectedProtocol, user){
     }
     xhr.send(JSON.stringify({ from: clientId, protocol: protocol }));
 
-    listenForMessages();
     initiateMessageService();
 }
 
-function listenForMessages() {
-}
+
 
 function addAndDisplayNewSentMessage(message){
     let myMsg;
