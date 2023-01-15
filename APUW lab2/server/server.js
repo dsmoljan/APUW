@@ -7,8 +7,8 @@ const port = 5000;
 var messagesForA = [];
 var messagesForB = [];
 
-var clientAProtocol = "none";
-var clientBProtocol = "none";
+var clientAProtocol = null;
+var clientBProtocol = null;
 
 var clientALongPollRes = null;
 var clientBLongPollRes = null;
@@ -28,18 +28,17 @@ app.post('/register', (req, res) => {
         clientBProtocol = req.body.protocol;
     }
 
-    res.end('Registration Successful!');
-
-    if (req.body.from === 'A' && clientAProtocol !== "longpoll"){
+    if (req.body.from === 'A'){
         closeLongPoll("A");
     }
 
-    if (req.body.from === 'B' && clientBProtocol !== "longpoll"){
+    if (req.body.from === 'B'){
         closeLongPoll("B");
     }
+
+    res.set('Access-Control-Allow-Origin', '*');
+    res.send('Registration Successful!');
 })
-
-
 
 // ovo je za slucaj xmlHttpRequesta
 // ali hej sad mi je palo na pamet što brani serveru da sluša na sve moguće načine hmm
@@ -59,14 +58,11 @@ app.post('/message/send', (req, res) => {
         }
     }
 
+    // falio ti je ovaj res.end lol
+    res.end();
     console.log(messagesForB);
 })
 
-
-app.get('/status', (req, res) => {
-    res.status(200);
-    res.end("OK");
-})
 
 // kod websocketa možda neću koristiti ovaj endpoint, nego svaki put u metodi /message/send, kad primim poruku od B za A, onda ću pozvati metodu proslijediPorukuWebSocket, koja će preko otvorenog websocketa
 // proslijediti tu poruku prema A
@@ -77,23 +73,21 @@ app.post('/message/get', (req, res) => {
     console.log(req.body);
 
     if (req.body.from === 'A'){
-        if (req.body.protocol === "poll"){
+        if (clientAProtocol === "poll"){
             handlePollMsgRequest(req, res);
-        }else if (req.body.protocol === "longpoll"){
+        }else if (clientAProtocol === "longpoll"){
             clientALongPollRes = res;
             if (messagesForA.length !== 0){
                 handleLongPollMsgResponse(res, messagesForA.pop());
-                clientALongPollRes = null;
             }
         }
     }else {
-        if (req.body.protocol === "poll"){
+        if (clientBProtocol === "poll"){
             handlePollMsgRequest(req, res);
-        }else if (req.body.protocol === "longpoll"){
+        }else if (clientBProtocol === "longpoll"){
             clientBLongPollRes = res;
             if (messagesForB.length !== 0){
                 handleLongPollMsgResponse(res, messagesForB.pop());
-                clientBLongPollRes = null;
             }
         }
     }
@@ -104,47 +98,55 @@ function handlePollMsgRequest(req, res) {
 
     if (req.body.from === 'A') {
         if (messagesForA.length === 0){
-            res.status(204).end();
+            res.status(204);
+            res.send();
         }else{
-            res.setHeader("Content-Type", "application/json");
+            res.status(200);
             body = JSON.stringify({message: messagesForA.pop()});
-            res.status(200).end(body);
+            res.setHeader("Content-Type", "application/json");
+            res.send(body);
         }
     } else {
         if (messagesForB.length === 0){
-            res.status(204).end();
+            res.status(204);
+            res.send();
         }else{
-            res.setHeader("Content-Type", "application/json");
+            res.status(200);
             body = JSON.stringify({message: messagesForB.pop()});
-            res.status(200).end(body);
+            res.send(body);
         }
     }
 }
 
 function handleLongPollMsgResponse(res, message){
     let body = null;
-    res.setHeader("Content-Type", "application/json");
+    res.status(200);
     body = JSON.stringify({message: message});
-    res.status(200).end(body);
+    res.setHeader("Content-Type", "application/json");
+    res.send(body);
 }
 
 function closeLongPoll(client) {
     if (client === "A"){
         if (clientALongPollRes !== null){
-            clientALongPollRes.status(204).end();
+            clientALongPollRes.status(204);
+            clientALongPollRes.send();
             clientALongPollRes = null;
-            console.log("Closing long poll with client A");
         }
     }
 
     if (client === "B"){
         if (clientBLongPollRes !== null){
-            clientBLongPollRes.status(204).end();
+            clientBLongPollRes.status(204);
+            clientBLongPollRes.send();
             clientBLongPollRes = null;
-            console.log("Closing long poll with client B");
         }
     }
 }
+
+
+
+
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
