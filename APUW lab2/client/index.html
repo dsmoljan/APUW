@@ -1,39 +1,42 @@
 <html>
 <head>
     <title>Chat App</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <h1>Chat App</h1>
 
-<form>
-    <h2>Select user</h2>
-    <div>
-        <input type="radio" id="A" name="user" value="poll" checked="true">
-        <label for="A">A</label>
-    </div>
-    <div>
-        <input type="radio" id="B" name="user" value="poll">
-        <label for="B">B</label>
-    </div>
-</form>
-<form>
-    <h2>Select protocol</h2>
-    <div>
-        <input type="radio" id="poll" name="protocol" value="poll" checked="true">
-        <label for="poll">Poll</label>
-    </div>
-    <div>
-        <input type="radio" id="longpoll" name="protocol" value="longpoll">
-        <label for="longpoll">Long poll</label>
-    </div>
-    <div>
-        <input type="radio" id="websocket" name="protocol" value="websocket">
-        <label for="websocket">WebSocket</label>
-    </div>
-</form>
+<div class="register">
+    <form class="selectbox">
+        <h2>Select user</h2>
+        <div>
+            <input type="radio" id="A" name="user" value="A" checked="true">
+            <label for="A">A</label>
+        </div>
+        <div>
+            <input type="radio" id="B" name="user" value="B">
+            <label for="B">B</label>
+        </div>
+    </form>
+    <form>
+        <h2>Select protocol</h2>
+        <div>
+            <input type="radio" id="poll" name="protocol" value="poll" checked="true">
+            <label for="poll">Poll</label>
+        </div>
+        <div>
+            <input type="radio" id="longpoll" name="protocol" value="longpoll">
+            <label for="longpoll">Long poll</label>
+        </div>
+        <div>
+            <input type="radio" id="websocket" name="protocol" value="websocket">
+            <label for="websocket">WebSocket</label>
+        </div>
+    </form>
 
-<input type="button" value="Register" onclick="registerClient()">
+    <input type="button" value="Register" onclick="registerClient()">
 
+</div>
 <h1><b>Messages</b></h1>
 <div id="messages">
 </div>

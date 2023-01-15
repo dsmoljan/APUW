@@ -1,30 +1,30 @@
 const radios = document.querySelectorAll('input[name="protocol"]');
 
-const clientId = "A";
+let clientId = "A";
 const serverUrl = 'http://localhost:5000';
 
 var protocol = "poll";
 
-var MSG_CHECK_INTERVAL = 60000;
+var MSG_CHECK_INTERVAL = 1000;
 
 var pollDaemonId = null;
 
 var allMessages = [];
 
-for (let i = 0; i < radios.length; i++) {
-    radios[i].addEventListener('change', function() {
-        if (this.checked) {
-            selectedOptionChanged(this.value);
-        }
-    });
-}
-
-function selectedOptionChanged(option) {
-    console.log(`Selected option changed to ${option}`);
-    protocol = option;
-    registerClient();
-    initiateMessageService();
-}
+// for (let i = 0; i < radios.length; i++) {
+//     radios[i].addEventListener('change', function() {
+//         if (this.checked) {
+//             selectedOptionChanged(this.value);
+//         }
+//     });
+// }
+//
+// function selectedOptionChanged(option) {
+//     console.log(`Selected option changed to ${option}`);
+//     protocol = option;
+//     registerClient();
+//     initiateMessageService();
+// }
 
 function initiateMessageService() {
     if (protocol === "poll"){
@@ -80,13 +80,17 @@ function sendMessageWebSocket(message){
 }
 
 
-window.addEventListener('load', function() {
-    registerClient();
-    listenForMessages();
-    initiateMessageService();
-});
+// window.addEventListener('load', function() {
+//     registerClient();
+//     listenForMessages();
+//     initiateMessageService();
+// });
 
-function registerClient(){
+function registerClient(selectedProtocol, user){
+
+
+    protocol = document.querySelector('input[name="protocol"]:checked').value;
+    clientId = document.querySelector('input[name="user"]:checked').value;
     console.log("Registering client at server");
     const xhr = new XMLHttpRequest();
     xhr.open("POST", serverUrl + "/register", true);
@@ -98,6 +102,9 @@ function registerClient(){
         }
     }
     xhr.send(JSON.stringify({ from: clientId, protocol: protocol }));
+
+    listenForMessages();
+    initiateMessageService();
 }
 
 function listenForMessages() {
