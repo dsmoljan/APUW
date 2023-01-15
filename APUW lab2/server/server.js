@@ -7,8 +7,8 @@ const port = 5000;
 var messagesForA = [];
 var messagesForB = [];
 
-var clientAProtocol = "none";
-var clientBProtocol = "none";
+var clientAProtocol = null;
+var clientBProtocol = null;
 
 var clientALongPollRes = null;
 var clientBLongPollRes = null;
@@ -28,11 +28,11 @@ app.post('/register', (req, res) => {
         clientBProtocol = req.body.protocol;
     }
 
-    if (req.body.from === 'A' && clientAProtocol !== "longpoll"){
+    if (req.body.from === 'A'){
         closeLongPoll("A");
     }
 
-    if (req.body.from === 'B' && clientBProtocol !== "longpoll"){
+    if (req.body.from === 'B'){
         closeLongPoll("B");
     }
 
@@ -58,6 +58,8 @@ app.post('/message/send', (req, res) => {
         }
     }
 
+    // falio ti je ovaj res.end lol
+    res.end();
     console.log(messagesForB);
 })
 
