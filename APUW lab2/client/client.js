@@ -2,7 +2,7 @@ const radios = document.querySelectorAll('input[name="protocol"]');
 
 let clientId = "A";
 const serverUrl = 'http://localhost:5000';
-const wsUrl = "ws://127.0.0.1:5000";
+const wsUrl = "ws://localhost:5000";
 
 var protocol = "poll";
 
