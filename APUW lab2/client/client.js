@@ -12,9 +12,12 @@ var pollDaemonId = null;
 
 var allMessages = [];
 
-var webSocket = new WebSocket(wsUrl);
+var webSocket = null;
 
 function initiateMessageService() {
+    if (webSocket != null){
+        webSocket.close();
+    }
     if (protocol === "poll"){
         pollDaemonId = setInterval(chkMsgPoll, MSG_CHECK_INTERVAL);
     }else{
@@ -25,8 +28,24 @@ function initiateMessageService() {
         if (protocol === "longpoll"){
             chkMsgLongPoll();
         }else{
+            webSocket = new WebSocket(wsUrl);
+            initWebSocket(webSocket);
+
             console.log("Starting WebSocket message service");
         }
+    }
+}
+
+function initWebSocket(){
+
+    webSocket.onopen = function(){
+        console.log("WebSocket opened. Sending register message");
+        webSocket.send(JSON.stringify({from: clientId, message: "register"}))
+    }
+
+    webSocket.onmessage = function(msgEvent){
+        console.log(msgEvent.data);
+        addAndDisplayNewRecievedMessage(JSON.parse(msgEvent).message);
     }
 }
 
@@ -97,6 +116,7 @@ function sendMessageLongPoll(message){
 }
 
 function sendMessageWebSocket(message){
+    webSocket.send(JSON.stringify({from: clientId, message: message}));
 }
 
 function registerClient(selectedProtocol, user){
@@ -123,17 +143,6 @@ function registerClient(selectedProtocol, user){
 
 
 }
-
-webSocket.onopen = function(){
-    console.log("WebSocket opened. Sending register message");
-    webSocket.send(JSON.stringify({from: clientId, message: "register"}))
-}
-
-webSocket.onmessage = function(msgEvent){
-    console.log(msgEvent.data);
-}
-
-
 
 function addAndDisplayNewSentMessage(message){
     let myMsg;

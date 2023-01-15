@@ -62,16 +62,14 @@ app.post('/message/send', (req, res) => {
         if (clientBProtocol === "longpoll"){
             handleLongPollMsgResponse(clientBLongPollRes, messagesForB.pop());
         }else if (clientBProtocol === "websocket"){
-            //TODO
-            console.log("ERROR! NOT IMPLEMENTED!!!!!")
+            handleWebSocketMessageResponse(clientBWebSocket, messagesForB.pop());
         }
     }else{
         messagesForA.push(req.body.message);
         if (clientAProtocol === "longpoll"){
             handleLongPollMsgResponse(clientALongPollRes, messagesForA.pop());
         }else if (clientAProtocol === "websocket") {
-            //TODO
-            console.log("ERROR! NOT IMPLEMENTED!!!!!")
+            handleWebSocketMessageResponse(clientAWebSocket, messagesForA.pop());
         }
     }
 
@@ -97,6 +95,8 @@ app.post('/message/get', (req, res) => {
             if (messagesForA.length !== 0){
                 handleLongPollMsgResponse(res, messagesForA.pop());
             }
+        }else{
+            handleWebSocketMessageResponse()
         }
     }else {
         if (clientBProtocol === "poll"){
@@ -162,72 +162,55 @@ function closeLongPoll(client) {
 }
 
 wss.on('connection', (ws) => {
-
     //connection is up, let's add a simple simple event
     ws.on('message', (message) => {
-
         //log the received message and send it back to the client
-        console.log('received: %s', message);
-        ws.send(`Hello, you sent -> ${message}`);
+        console.log('Received WebSocket message: %s', message);
+
+        const messageJson = JSON.parse(message);
+
+        if (messageJson.from === 'A'){
+            if (messageJson.message === "register"){
+                clientAWebSocket = ws;
+                clientAProtocol = "websocket";
+            }else{
+                messagesForB.push(messageJson.message);
+                if (clientBProtocol === "longpoll"){
+                    handleLongPollMsgResponse(clientBLongPollRes, messagesForB.pop());
+                }else if (clientBProtocol === "websocket"){
+                    handleWebSocketMessageResponse(clientBWebSocket, messagesForB.pop());
+                }
+            }
+        }else{
+            if (messageJson.message === "register"){
+                clientBWebSocket = ws;
+                clientBProtocol = "websocket";
+            }else{
+                messagesForA.push(messageJson.message);
+                if (clientAProtocol === "longpoll"){
+                    handleLongPollMsgResponse(clientALongPollRes, messagesForA.pop());
+                }else if (clientAProtocol === "websocket"){
+                    handleWebSocketMessageResponse(clientAWebSocket, messagesForA.pop());
+                }
+            }
+        }
     });
 
-    //send immediatly a feedback to the incoming connection
-    ws.send('Hi there, I am a WebSocket server');
+    ws.on('close', (message) => {
+        if (clientAWebSocket === wss){
+            console.log("WebSocket for A closed");
+            clientAWebSocket = null;
+        }else if (clientBWebSocket === wss){
+            console.log("WebSocket for B closed");
+            clientBWebSocket = null;
+        }else{
+            console.log("Unknow WebSocket closed! Possible error!");
+        }
+    })
 });
-
-// websocket
-wss.onopen = function() {
-    console.log("New WebSocket opened");
-}
-
-wss.on('message', (message) => {
-    console.log("Received WebSocket message");
-
-    const messageJson = JSON.parse(message);
-
-    if (messageJson.from === 'A'){
-        if (messageJson.message === "register"){
-            clientAWebSocket = wss;
-        }else{
-            messagesForB.push(messageJson.message);
-            if (clientBProtocol === "longpoll"){
-                handleLongPollMsgResponse(clientBLongPollRes, messagesForB.pop());
-            }else if (clientBProtocol === "websocket"){
-                //TODO
-                console.log("ERROR! NOT IMPLEMENTED!!!!!")
-            }
-        }
-    }else{
-        if (messageJson.message === "register"){
-            clientBWebSocket = wss;
-        }else{
-            messagesForA.push(messageJson.message);
-            if (clientAProtocol === "longpoll"){
-                handleLongPollMsgResponse(clientALongPollRes, messagesForA.pop());
-            }else if (clientAProtocol === "websocket"){
-                //TODO
-                console.log("ERROR! NOT IMPLEMENTED!!!!!")
-            }
-        }
-    }
-})
-
-wss.on('close', (message) => {
-    if (clientAWebSocket === wss){
-        console.log("WebSocket for A closed");
-        clientAWebSocket = null;
-    }else if (clientBWebSocket === wss){
-        console.log("WebSocket for B closed");
-        clientBWebSocket = null;
-    }else{
-        console.log("Unknow WebSocket closed! Possible error!");
-    }
-})
-
-
 
 function handleWebSocketMessageResponse(clientWebSocket, message) {
     if (clientWebSocket !== null) {
-        clientWebSocket.send(message);
+        clientWebSocket.send(JSON.stringify({message: message}));
     }
 }
