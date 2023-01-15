@@ -129,6 +129,10 @@ webSocket.onopen = function(){
     webSocket.send(JSON.stringify({from: clientId, message: "register"}))
 }
 
+webSocket.onmessage = function(msgEvent){
+    console.log(msgEvent.data);
+}
+
 
 
 function addAndDisplayNewSentMessage(message){
