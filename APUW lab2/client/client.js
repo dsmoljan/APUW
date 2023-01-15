@@ -38,7 +38,6 @@ function initiateMessageService() {
             chkMsgLongPoll();
         }
     }
-
 }
 
 function chkMsgPoll(){
@@ -120,7 +119,7 @@ function sendMessageWebSocket(message){
 function registerClient(selectedProtocol, user){
     protocol = document.querySelector('input[name="protocol"]:checked').value;
     clientId = document.querySelector('input[name="user"]:checked').value;
-    console.log("Registering client at server");
+    console.log("Registering client at server as client " + clientId);
     const xhr = new XMLHttpRequest();
     xhr.open("POST", serverUrl + "/register", true);
     xhr.setRequestHeader("Content-Type", "application/json");
@@ -128,11 +127,12 @@ function registerClient(selectedProtocol, user){
         if (this.status === 200){
             console.log("Successfully registered!");
             console.log(this.response);
+            initiateMessageService();
+        }else{
+            console.log("Error while attempting to register client!");
         }
     }
     xhr.send(JSON.stringify({ from: clientId, protocol: protocol }));
-
-    initiateMessageService();
 }
 
 
