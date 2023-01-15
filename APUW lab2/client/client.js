@@ -64,6 +64,9 @@ function sendMessage(message) {
     }else{
         sendMessageWebSocket(message);
     }
+
+    document.getElementById("message").value = "";
+    addAndDisplayNewSentMessage(message);
 }
 
 function sendMessagePoll(message){
@@ -110,8 +113,17 @@ function registerClient(selectedProtocol, user){
 function listenForMessages() {
 }
 
-function addAndDisplayNewSentMessage(){
+function addAndDisplayNewSentMessage(message){
+    let myMsg;
 
+    if (clientId === "A"){
+        myMsg = "A";
+    }else{
+        myMsg = "B";
+    }
+
+    allMessages.push("[" + myMsg + "]:" + message);
+    displayMessages();
 }
 
 function addAndDisplayNewRecievedMessage(message){
