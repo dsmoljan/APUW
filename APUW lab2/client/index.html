@@ -4,10 +4,22 @@
 </head>
 <body>
 <h1>Chat App</h1>
+
+<form>
+    <h2>Select user</h2>
+    <div>
+        <input type="radio" id="A" name="user" value="poll" checked="true">
+        <label for="A">A</label>
+    </div>
+    <div>
+        <input type="radio" id="B" name="user" value="poll">
+        <label for="B">B</label>
+    </div>
+</form>
 <form>
     <h2>Select protocol</h2>
     <div>
-        <input type="radio" id="poll" name="protocol" value="poll">
+        <input type="radio" id="poll" name="protocol" value="poll" checked="true">
         <label for="poll">Poll</label>
     </div>
     <div>
@@ -19,10 +31,11 @@
         <label for="websocket">WebSocket</label>
     </div>
 </form>
-<br>
+
+<input type="button" value="Register" onclick="registerClient()">
+
+<h1><b>Messages</b></h1>
 <div id="messages">
-    <p><b>Messages</b></p>
-    Poruka 1
 </div>
 <form>
     <br>
