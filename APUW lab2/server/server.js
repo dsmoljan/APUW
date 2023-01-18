@@ -173,8 +173,9 @@ wss.on('connection', (ws) => {
             if (messageJson.message === "register"){
                 clientAWebSocket = ws;
                 clientAProtocol = "websocket";
-                //TODO: pošalji mu poruku ako ima neka u redu čekanja
-            }else{
+                if (messagesForA.length !== 0){
+                    handleWebSocketMessageResponse(clientAWebSocket, messagesForA.pop());
+                }            }else{
                 messagesForB.push(messageJson.message);
                 if (clientBProtocol === "longpoll"){
                     handleLongPollMsgResponse(clientBLongPollRes, messagesForB.pop());
@@ -186,7 +187,9 @@ wss.on('connection', (ws) => {
             if (messageJson.message === "register"){
                 clientBWebSocket = ws;
                 clientBProtocol = "websocket";
-                // TODO: pošalji mu poruku ako ima za B
+                if (messagesForB.length !== 0){
+                    handleWebSocketMessageResponse(clientBWebSocket, messagesForB.pop());
+                }
             }else{
                 messagesForA.push(messageJson.message);
                 if (clientAProtocol === "longpoll"){
