@@ -173,6 +173,7 @@ wss.on('connection', (ws) => {
             if (messageJson.message === "register"){
                 clientAWebSocket = ws;
                 clientAProtocol = "websocket";
+                //TODO: pošalji mu poruku ako ima neka u redu čekanja
             }else{
                 messagesForB.push(messageJson.message);
                 if (clientBProtocol === "longpoll"){
@@ -185,6 +186,7 @@ wss.on('connection', (ws) => {
             if (messageJson.message === "register"){
                 clientBWebSocket = ws;
                 clientBProtocol = "websocket";
+                // TODO: pošalji mu poruku ako ima za B
             }else{
                 messagesForA.push(messageJson.message);
                 if (clientAProtocol === "longpoll"){
@@ -197,10 +199,10 @@ wss.on('connection', (ws) => {
     });
 
     ws.on('close', (message) => {
-        if (clientAWebSocket === wss){
+        if (clientAWebSocket === ws){
             console.log("WebSocket for A closed");
             clientAWebSocket = null;
-        }else if (clientBWebSocket === wss){
+        }else if (clientBWebSocket === ws){
             console.log("WebSocket for B closed");
             clientBWebSocket = null;
         }else{
