@@ -2,6 +2,8 @@ const express = require('express')
 var cors = require('cors')
 const app = express()
 
+const WebSocket = require('ws');
+
 const port = 5000;
 
 var messagesForA = [];
@@ -13,8 +15,17 @@ var clientBProtocol = null;
 var clientALongPollRes = null;
 var clientBLongPollRes = null;
 
+var clientAWebSocket = null;
+var clientBWebSocket = null;
+
 app.use(cors());
 app.use(express.json());
+
+const server = app.listen(port, () => {
+    console.log(`Example app listening on port ${port}`)
+})
+
+const wss = new WebSocket.Server({ server });
 
 
 // ovo samo kaze "kad dobijes get zahtjev na /, sto napraviti
@@ -50,11 +61,15 @@ app.post('/message/send', (req, res) => {
         messagesForB.push(req.body.message);
         if (clientBProtocol === "longpoll"){
             handleLongPollMsgResponse(clientBLongPollRes, messagesForB.pop());
+        }else if (clientBProtocol === "websocket"){
+            handleWebSocketMessageResponse(clientBWebSocket, messagesForB.pop());
         }
     }else{
         messagesForA.push(req.body.message);
         if (clientAProtocol === "longpoll"){
             handleLongPollMsgResponse(clientALongPollRes, messagesForA.pop());
+        }else if (clientAProtocol === "websocket") {
+            handleWebSocketMessageResponse(clientAWebSocket, messagesForA.pop());
         }
     }
 
@@ -80,6 +95,8 @@ app.post('/message/get', (req, res) => {
             if (messagesForA.length !== 0){
                 handleLongPollMsgResponse(res, messagesForA.pop());
             }
+        }else{
+            handleWebSocketMessageResponse()
         }
     }else {
         if (clientBProtocol === "poll"){
@@ -144,10 +161,58 @@ function closeLongPoll(client) {
     }
 }
 
+wss.on('connection', (ws) => {
+    //connection is up, let's add a simple simple event
+    ws.on('message', (message) => {
+        //log the received message and send it back to the client
+        console.log('Received WebSocket message: %s', message);
 
+        const messageJson = JSON.parse(message);
 
+        if (messageJson.from === 'A'){
+            if (messageJson.message === "register"){
+                clientAWebSocket = ws;
+                clientAProtocol = "websocket";
+                //TODO: pošalji mu poruku ako ima neka u redu čekanja
+            }else{
+                messagesForB.push(messageJson.message);
+                if (clientBProtocol === "longpoll"){
+                    handleLongPollMsgResponse(clientBLongPollRes, messagesForB.pop());
+                }else if (clientBProtocol === "websocket"){
+                    handleWebSocketMessageResponse(clientBWebSocket, messagesForB.pop());
+                }
+            }
+        }else{
+            if (messageJson.message === "register"){
+                clientBWebSocket = ws;
+                clientBProtocol = "websocket";
+                // TODO: pošalji mu poruku ako ima za B
+            }else{
+                messagesForA.push(messageJson.message);
+                if (clientAProtocol === "longpoll"){
+                    handleLongPollMsgResponse(clientALongPollRes, messagesForA.pop());
+                }else if (clientAProtocol === "websocket"){
+                    handleWebSocketMessageResponse(clientAWebSocket, messagesForA.pop());
+                }
+            }
+        }
+    });
 
+    ws.on('close', (message) => {
+        if (clientAWebSocket === ws){
+            console.log("WebSocket for A closed");
+            clientAWebSocket = null;
+        }else if (clientBWebSocket === ws){
+            console.log("WebSocket for B closed");
+            clientBWebSocket = null;
+        }else{
+            console.log("Unknow WebSocket closed! Possible error!");
+        }
+    })
+});
 
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-})
+function handleWebSocketMessageResponse(clientWebSocket, message) {
+    if (clientWebSocket !== null) {
+        clientWebSocket.send(JSON.stringify({message: message}));
+    }
+}
