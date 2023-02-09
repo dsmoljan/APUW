@@ -209,7 +209,7 @@ wss.on('connection', (ws) => {
             console.log("WebSocket for B closed");
             clientBWebSocket = null;
         }else{
-            console.log("Unknow WebSocket closed! Possible error!");
+            console.log("Unknown WebSocket closed! Possible error!");
         }
     })
 });

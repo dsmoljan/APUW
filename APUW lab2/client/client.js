@@ -6,7 +6,7 @@ const wsUrl = "ws://localhost:5000";
 
 var protocol = "poll";
 
-var MSG_CHECK_INTERVAL = 1000;
+var MSG_CHECK_INTERVAL = 5000;
 
 var pollDaemonId = null;
 
